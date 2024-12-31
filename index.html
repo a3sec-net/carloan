@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Loan Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .calculator {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .output {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 1.5rem;
+            color: #333;
+        }
+        .slider-value {
+            display: inline-block;
+            margin-left: 0.5rem;
+            color: #666;
+        }
+        .additional-info {
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Car Loan Calculator</h1>
+        <div class="input-group">
+            <label for="loanAmount">Loan Amount ($)</label>
+            <input type="range" id="loanAmount" min="1000" max="100000" value="20000" step="100">
+            <span class="slider-value" id="loanAmountValue">20,000</span>
+        </div>
+        <div class="input-group">
+            <label for="downPayment">Down Payment ($)</label>
+            <input type="range" id="downPayment" min="0" step="100" max="50000" value="5000">
+            <span class="slider-value" id="downPaymentValue">5,000</span>
+        </div>
+        <div class="input-group">
+            <label for="apr">APR (%)</label>
+            <input type="range" id="apr" min="0" max="20" step="0.5" value="5">
+            <span class="slider-value" id="aprValue">5.0</span>
+        </div>
+        <div class="input-group">
+            <label for="term">Loan Term (Years)</label>
+            <input type="range" id="term" min="1" max="10" step="0.5" value="5">
+            <span class="slider-value" id="termValue">5</span>
+            <span class="slider-value">(<span id="termMonthsValue">60</span> months)</span>
+        </div>
+        <div class="input-group">
+            <label for="salesTax">Sales Tax (%)</label>
+            <input type="range" id="salesTax" min="0" max="10" step="0.1" value="7">
+            <span class="slider-value" id="salesTaxValue">7.0</span>
+        </div>
+        <div class="input-group">
+            <label for="registrationFee">Registration Fee ($)</label>
+            <input type="range" id="registrationFee" min="0" max="1000" value="300">
+            <span class="slider-value" id="registrationFeeValue">300</span>
+        </div>
+        <div class="output">
+            Monthly Payment: <span id="monthlyPayment">$0.00</span>
+        </div>
+        <div class="additional-info">
+            Total Interest Paid: <span id="totalInterest">$0.00</span>
+        </div>
+    </div>
+    <script>
+        const loanAmount = document.getElementById('loanAmount');
+        const downPayment = document.getElementById('downPayment');
+        const apr = document.getElementById('apr');
+        const term = document.getElementById('term');
+        const salesTax = document.getElementById('salesTax');
+        const registrationFee = document.getElementById('registrationFee');
+        const loanAmountValue = document.getElementById('loanAmountValue');
+        const downPaymentValue = document.getElementById('downPaymentValue');
+        const aprValue = document.getElementById('aprValue');
+        const termValue = document.getElementById('termValue');
+        const termMonthsValue = document.getElementById('termMonthsValue');
+        const salesTaxValue = document.getElementById('salesTaxValue');
+        const registrationFeeValue = document.getElementById('registrationFeeValue');
+        const monthlyPayment = document.getElementById('monthlyPayment');
+        const totalInterest = document.getElementById('totalInterest');
+
+        function formatNumber(num) {
+            return num.toLocaleString();
+        }
+
+        function calculateMonthlyPayment() {
+            const principal = loanAmount.value - downPayment.value;
+            const tax = (principal * salesTax.value) / 100;
+            const totalCost = principal + tax + parseFloat(registrationFee.value);
+            const rate = apr.value / 100 / 12;
+            const periods = term.value * 12;
+            const payment = (totalCost * rate) / (1 - Math.pow(1 + rate, -periods));
+            monthlyPayment.textContent = `$${payment.toFixed(2)}`;
+
+            // Calculate total interest paid
+            const totalPayment = payment * periods;
+            const totalInterestPaid = totalPayment - totalCost;
+            totalInterest.textContent = `$${totalInterestPaid.toFixed(2)}`;
+        }
+
+        function saveSettings() {
+            localStorage.setItem('loanAmount', loanAmount.value);
+            localStorage.setItem('downPayment', downPayment.value);
+            localStorage.setItem('apr', apr.value);
+            localStorage.setItem('term', term.value);
+            localStorage.setItem('salesTax', salesTax.value);
+            localStorage.setItem('registrationFee', registrationFee.value);
+        }
+
+        function loadSettings() {
+            if (localStorage.getItem('loanAmount')) {
+                loanAmount.value = localStorage.getItem('loanAmount');
+                loanAmountValue.textContent = formatNumber(loanAmount.value);
+            }
+            if (localStorage.getItem('downPayment')) {
+                downPayment.value = localStorage.getItem('downPayment');
+                downPaymentValue.textContent = formatNumber(downPayment.value);
+            }
+            if (localStorage.getItem('apr')) {
+                apr.value = localStorage.getItem('apr');
+                aprValue.textContent = apr.value;
+            }
+            if (localStorage.getItem('term')) {
+                term.value = localStorage.getItem('term');
+                termValue.textContent = term.value;
+                termMonthsValue.textContent = term.value * 12;
+            }
+            if (localStorage.getItem('salesTax')) {
+                salesTax.value = localStorage.getItem('salesTax');
+                salesTaxValue.textContent = salesTax.value;
+            }
+            if (localStorage.getItem('registrationFee')) {
+                registrationFee.value = localStorage.getItem('registrationFee');
+                registrationFeeValue.textContent = registrationFee.value;
+            }
+            calculateMonthlyPayment();
+        }
+
+        loanAmount.addEventListener('input', () => {
+            loanAmountValue.textContent = formatNumber(loanAmount.value);
+            calculateMonthlyPayment();
+            saveSettings();
+        });
+
+        downPayment.addEventListener('input', () => {
+            downPaymentValue.textContent = formatNumber(downPayment.value);
+            calculateMonthlyPayment();
+            saveSettings();
+        });
+
+        apr.addEventListener('input', () => {
+            aprValue.textContent = apr.value;
+            calculateMonthlyPayment();
+            saveSettings();
+        });
+
+        term.addEventListener('input', () => {
+            termValue.textContent = term.value;
+            termMonthsValue.textContent = term.value * 12;
+            calculateMonthlyPayment();
+            saveSettings();
+        });
+
+        salesTax.addEventListener('input', () => {
+            salesTaxValue.textContent = salesTax.value;
+            calculateMonthlyPayment();
+            saveSettings();
+        });
+
+        registrationFee.addEventListener('input', () => {
+            registrationFeeValue.textContent = registrationFee.value;
+            calculateMonthlyPayment();
+            saveSettings();
+        });
+
+        // Load saved settings when the page loads
+        loadSettings();
+    </script>
+</body>
+</html>
